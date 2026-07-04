@@ -30,5 +30,16 @@ service cloud.firestore {
         request.auth.uid == get(/databases/$(database)/documents/groups/$(resource.data.groupId)).data.creatorId
       );
     }
+
+    // Doc IDs are `${userId}_${date}`, which combined with create-only (no update)
+    // enforces one attempt per calendar day at the database level too (FR-3.6).
+    // Read is open to any signed-in user (v1 simplification of FR-5.1/NFR-7, matching
+    // the same tradeoff made for groups/groupMemberships) rather than checking shared
+    // group membership per-read.
+    match /plankAttempts/{attemptId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if false;
+    }
   }
 }

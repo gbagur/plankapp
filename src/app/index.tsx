@@ -4,11 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useAuth } from '@/features/auth/auth-context';
 import { usePlankTimer } from '@/features/timer/use-plank-timer';
 import { formatDuration } from '@/lib/date';
 
 export default function TimerScreen() {
-  const { status, elapsedSeconds, todayAttempt, start, stop } = usePlankTimer();
+  const { user } = useAuth();
+  const { status, elapsedSeconds, todayAttempt, start, stop } = usePlankTimer(user?.uid);
 
   return (
     <ThemedView style={styles.container}>

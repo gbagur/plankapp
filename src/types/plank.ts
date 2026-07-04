@@ -6,4 +6,6 @@ export interface PlankAttempt {
   startedAt: string;
   endedAt: string;
   createdAt: string;
+  /** Whether this attempt has been written to Firestore yet (NFR-3/4: offline queueing). */
+  synced: boolean;
 }

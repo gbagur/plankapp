@@ -2,6 +2,7 @@ import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
+import { syncPendingAttempts } from '@/features/timer/sync-attempts';
 import { localDateKey, roundToTenth } from '@/lib/date';
 import {
   clearActiveSession,
@@ -18,7 +19,7 @@ function makeId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export function usePlankTimer() {
+export function usePlankTimer(userId: string | undefined) {
   const [status, setStatus] = useState<TimerStatus>('loading');
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [todayAttempt, setTodayAttempt] = useState<PlankAttempt | null>(null);
@@ -60,6 +61,12 @@ export function usePlankTimer() {
     })();
   }, [tick]);
 
+  // Opportunistically flush any attempts that couldn't reach Firestore earlier
+  // (e.g. logged while offline) once we have a signed-in user (NFR-3/4).
+  useEffect(() => {
+    if (userId) syncPendingAttempts(userId).catch(() => {});
+  }, [userId]);
+
   // Recompute from timestamps (not elapsed ticks) on foreground/interval so accuracy
   // is unaffected by backgrounding or UI-thread lag (FR-3.4, NFR-1, NFR-2).
   useEffect(() => {
@@ -95,6 +102,7 @@ export function usePlankTimer() {
       startedAt: new Date(startedAtMs).toISOString(),
       endedAt: endedAt.toISOString(),
       createdAt: endedAt.toISOString(),
+      synced: false,
     };
     await saveAttempt(attempt);
     await clearActiveSession();
@@ -102,7 +110,8 @@ export function usePlankTimer() {
     setTodayAttempt(attempt);
     setElapsedSeconds(attempt.durationSeconds);
     setStatus('completed');
-  }, [status]);
+    if (userId) syncPendingAttempts(userId).catch(() => {});
+  }, [status, userId]);
 
   return { status, elapsedSeconds, todayAttempt, start, stop };
 }

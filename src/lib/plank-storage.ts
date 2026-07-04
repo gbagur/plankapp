@@ -25,6 +25,12 @@ export async function saveAttempt(attempt: PlankAttempt): Promise<void> {
   await AsyncStorage.setItem(ATTEMPTS_KEY, JSON.stringify(attempts));
 }
 
+export async function markAttemptSynced(id: string): Promise<void> {
+  const attempts = await getAttempts();
+  const updated = attempts.map((attempt) => (attempt.id === id ? { ...attempt, synced: true } : attempt));
+  await AsyncStorage.setItem(ATTEMPTS_KEY, JSON.stringify(updated));
+}
+
 export async function getActiveSession(): Promise<ActiveSession | null> {
   const raw = await AsyncStorage.getItem(ACTIVE_SESSION_KEY);
   return raw ? (JSON.parse(raw) as ActiveSession) : null;
