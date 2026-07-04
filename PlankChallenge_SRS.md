@@ -111,10 +111,13 @@ There is no separate "super admin" role required for v1 beyond basic backend/sup
 
 ## 6. Assumptions & Open Points to Confirm
 
-- **One attempt shared across all groups vs. one per group**: Default assumed is one global daily attempt visible in all the user's groups. Please confirm this matches intent, since a user in 3 groups logging 3 separate planks a day is a different (heavier) feature.
+- **One attempt shared across all groups vs. one per group**: **Confirmed (2026-07-04)** — one global daily attempt, visible in all of the user's groups. `PlankAttempt` has no `group_id`, matching the data model in Section 5.
 - No verification/anti-cheat means stats integrity relies entirely on user honesty — worth stating explicitly in-app.
 - No monetization, ads, or payment requirements specified — assumed out of scope for v1.
 - No specified minimum/maximum group size — assumed unlimited unless stated otherwise.
+- **Week-over-week / month-over-month % change (FR-4.1)**: computed on average daily duration for the period (missed days count as 0 toward the average, consistent with FR-3.7).
+- **Streak calculation (FR-4.1)**: a missed day breaks the current streak, resetting it to 0.
+- **Invite link/code (FR-2.2/2.3)**: implemented as a deep link with a web-URL fallback, so the same link works whether opened on a device with the app installed or in a browser.
 
 ---
 
@@ -123,3 +126,13 @@ There is no separate "super admin" role required for v1 beyond basic backend/sup
 - Comments, reactions, badges, or achievement systems.
 - Public/global leaderboards outside of a user's own groups.
 - Coaching content, workout plans beyond the daily plank.
+
+---
+
+## 8. Technical Decisions (2026-07-04)
+
+- **Delivery scope**: Mobile (iOS/Android) and Web built together from v1, not phased.
+- **Client stack**: Expo (React Native + `react-native-web`), giving one TypeScript codebase for all three targets and satisfying NFR-8 (identical timer logic across platforms).
+- **Backend**: Supabase (Postgres + Auth, incl. Google OAuth + Realtime + offline-friendly client), chosen to cover NFR-3 (sync), NFR-4 (offline support), and FR-5.3 (near-real-time leaderboard) without a hand-built sync layer.
+- **Infra/accounts**: No hosting, Supabase project, or Google OAuth client exists yet — these will be created as development reaches the point of needing them.
+- **Source control**: https://github.com/gbagur/plankapp (public).
