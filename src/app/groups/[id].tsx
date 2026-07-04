@@ -14,6 +14,7 @@ import {
   removeMember,
   renameGroup,
 } from '@/features/groups/group-actions';
+import { Leaderboard } from '@/features/groups/leaderboard';
 import { useGroup } from '@/features/groups/use-group';
 import { useGroupMembers } from '@/features/groups/use-group-members';
 
@@ -106,6 +107,8 @@ export default function GroupDetailScreen() {
               <ThemedText type="link">Share</ThemedText>
             </ThemedView>
           </Pressable>
+
+          <Leaderboard members={members} />
 
           <ThemedText type="smallBold">Members</ThemedText>
           {members.map((member) => (
