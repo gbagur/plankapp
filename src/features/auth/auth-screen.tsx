@@ -7,11 +7,13 @@ import { ThemedTextInput } from '@/components/themed-text-input';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { resetPassword, signIn, signUp } from '@/features/auth/auth-actions';
+import { useAuth } from '@/features/auth/auth-context';
 import { friendlyAuthError } from '@/features/auth/auth-errors';
 
 type Mode = 'sign-in' | 'sign-up' | 'forgot-password';
 
 export function AuthScreen() {
+  const { refreshUser } = useAuth();
   const [mode, setMode] = useState<Mode>('sign-in');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,6 +30,7 @@ export function AuthScreen() {
         await signIn(email.trim(), password);
       } else if (mode === 'sign-up') {
         await signUp(email.trim(), password, displayName.trim() || email.trim());
+        await refreshUser();
       } else {
         await resetPassword(email.trim());
         setResetSent(true);
