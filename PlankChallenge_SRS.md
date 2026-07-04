@@ -133,6 +133,6 @@ There is no separate "super admin" role required for v1 beyond basic backend/sup
 
 - **Delivery scope**: Mobile (iOS/Android) and Web built together from v1, not phased.
 - **Client stack**: Expo (React Native + `react-native-web`), giving one TypeScript codebase for all three targets and satisfying NFR-8 (identical timer logic across platforms).
-- **Backend**: Supabase (Postgres + Auth, incl. Google OAuth + Realtime + offline-friendly client), chosen to cover NFR-3 (sync), NFR-4 (offline support), and FR-5.3 (near-real-time leaderboard) without a hand-built sync layer.
-- **Infra/accounts**: No hosting, Supabase project, or Google OAuth client exists yet — these will be created as development reaches the point of needing them.
+- **Backend**: Firebase (Firestore + Auth, incl. Google OAuth), chosen to cover NFR-3 (sync), NFR-4 (offline support via Firestore's built-in offline cache), and FR-5.3 (near-real-time leaderboard via Firestore listeners) without a hand-built sync layer. **Updated 2026-07-04**, switched from the originally planned Supabase — same rationale, different provider. Uses the Firebase JS SDK (not `@react-native-firebase`) so the app keeps running unmodified in Expo Go, without requiring a custom dev client build.
+- **Infra/accounts**: No hosting or Firebase project exists yet — these will be created as development reaches the point of needing them.
 - **Source control**: https://github.com/gbagur/plankapp (public).
