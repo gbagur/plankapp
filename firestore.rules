@@ -8,5 +8,27 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
+
+    // Group metadata is readable by any signed-in user so an invite code can be looked
+    // up before joining; only the creator can rename/delete (FR-2.5).
+    match /groups/{groupId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.creatorId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.creatorId;
+    }
+
+    // Membership doc IDs are `${userId}_${groupId}` by convention. Read is left open to
+    // any signed-in user (v1 simplification of FR-2.7) rather than checking group
+    // membership per-read. Create is self-service; delete is self (leave) or the group's
+    // creator (remove member).
+    match /groupMemberships/{membershipId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if false;
+      allow delete: if request.auth != null && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid == get(/databases/$(database)/documents/groups/$(resource.data.groupId)).data.creatorId
+      );
+    }
   }
 }

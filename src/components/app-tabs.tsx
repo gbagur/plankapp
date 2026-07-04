@@ -28,6 +28,11 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
+      <NativeTabs.Trigger name="groups">
+        <NativeTabs.Trigger.Label>Groups</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="person.3" md="groups" />
+      </NativeTabs.Trigger>
+
       <NativeTabs.Trigger name="profile">
         <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="person.circle" md="account_circle" />

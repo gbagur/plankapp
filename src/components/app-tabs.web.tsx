@@ -25,6 +25,9 @@ export default function AppTabs() {
           <TabTrigger name="history" href="/history" asChild>
             <TabButton>History</TabButton>
           </TabTrigger>
+          <TabTrigger name="groups" href="/groups" asChild>
+            <TabButton>Groups</TabButton>
+          </TabTrigger>
           <TabTrigger name="profile" href="/profile" asChild>
             <TabButton>Profile</TabButton>
           </TabTrigger>
