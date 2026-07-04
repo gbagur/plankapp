@@ -11,6 +11,25 @@ export interface MemberStats {
   longestStreak: number;
   personalBest: number;
   weeklyAverage: number;
+  /** Percent change in average daily duration vs. the prior 7-day window; null if that window has no data. */
+  weekOverWeekChangePct: number | null;
+  /** Percent change in average daily duration vs. the prior 30-day window; null if that window has no data. */
+  monthOverMonthChangePct: number | null;
+}
+
+function rollingAverage(byDate: Map<string, number>, endDate: Date, days: number): number {
+  let sum = 0;
+  const cursor = new Date(endDate);
+  for (let i = 0; i < days; i++) {
+    sum += byDate.get(localDateKey(cursor)) ?? 0;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return sum / days;
+}
+
+function percentChange(current: number, previous: number): number | null {
+  if (previous === 0) return null;
+  return ((current - previous) / previous) * 100;
 }
 
 /**
@@ -52,18 +71,23 @@ export function computeStats(attempts: AttemptLike[]): MemberStats {
 
   const personalBest = attempts.reduce((max, attempt) => Math.max(max, attempt.durationSeconds), 0);
 
-  let weeklySum = 0;
-  const day = new Date(today);
-  for (let i = 0; i < 7; i++) {
-    weeklySum += byDate.get(localDateKey(day)) ?? 0;
-    day.setDate(day.getDate() - 1);
-  }
+  const weeklyAverage = rollingAverage(byDate, today, 7);
+  const lastWeekEnd = new Date(today);
+  lastWeekEnd.setDate(lastWeekEnd.getDate() - 7);
+  const previousWeeklyAverage = rollingAverage(byDate, lastWeekEnd, 7);
+
+  const monthlyAverage = rollingAverage(byDate, today, 30);
+  const lastMonthEnd = new Date(today);
+  lastMonthEnd.setDate(lastMonthEnd.getDate() - 30);
+  const previousMonthlyAverage = rollingAverage(byDate, lastMonthEnd, 30);
 
   return {
     todayDuration,
     currentStreak,
     longestStreak,
     personalBest,
-    weeklyAverage: weeklySum / 7,
+    weeklyAverage,
+    weekOverWeekChangePct: percentChange(weeklyAverage, previousWeeklyAverage),
+    monthOverMonthChangePct: percentChange(monthlyAverage, previousMonthlyAverage),
   };
 }
