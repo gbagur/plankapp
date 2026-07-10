@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { Alert, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -10,7 +10,18 @@ import { formatDuration } from '@/lib/date';
 
 export default function TimerScreen() {
   const { user } = useAuth();
-  const { status, elapsedSeconds, todayAttempt, start, stop } = usePlankTimer(user?.uid);
+  const { status, elapsedSeconds, todayAttempt, start, stop, deleteToday } = usePlankTimer(user?.uid);
+
+  const confirmDelete = () => {
+    Alert.alert(
+      "Delete today's plank?",
+      'This removes the attempt you logged today. You can record a new one afterwards.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => void deleteToday() },
+      ]
+    );
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -25,9 +36,19 @@ export default function TimerScreen() {
           </ThemedText>
 
           {status === 'completed' && todayAttempt && (
-            <ThemedText themeColor="textSecondary">
-              Today&apos;s plank logged: {formatDuration(todayAttempt.durationSeconds)}
-            </ThemedText>
+            <>
+              <ThemedText themeColor="textSecondary">
+                Today&apos;s plank logged: {formatDuration(todayAttempt.durationSeconds)}
+              </ThemedText>
+
+              <Pressable onPress={confirmDelete} style={({ pressed }) => pressed && styles.pressed}>
+                <ThemedView type="backgroundSelected" style={styles.actionButton}>
+                  <ThemedText type="link" style={styles.deleteText}>
+                    Delete
+                  </ThemedText>
+                </ThemedView>
+              </Pressable>
+            </>
           )}
 
           {status === 'idle' && (
@@ -86,5 +107,8 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.7,
+  },
+  deleteText: {
+    color: '#E5484D',
   },
 });

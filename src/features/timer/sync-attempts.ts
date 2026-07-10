@@ -1,4 +1,4 @@
-import { doc, setDoc } from 'firebase/firestore';
+import { deleteDoc, doc, setDoc } from 'firebase/firestore';
 
 import { db } from '@/lib/firebase';
 import { getAttempts, markAttemptSynced } from '@/lib/plank-storage';
@@ -6,6 +6,15 @@ import type { PlankAttempt } from '@/types/plank';
 
 function attemptDocId(userId: string, attempt: PlankAttempt): string {
   return `${userId}_${attempt.date}`;
+}
+
+/**
+ * Removes an attempt from Firestore. Fire-and-forget like {@link syncPendingAttempts}:
+ * if offline, Firestore queues the delete and applies it once connectivity returns.
+ * Deleting a doc that never synced is a harmless no-op.
+ */
+export async function deleteRemoteAttempt(userId: string, attempt: PlankAttempt): Promise<void> {
+  await deleteDoc(doc(db, 'plankAttempts', attemptDocId(userId, attempt)));
 }
 
 /**

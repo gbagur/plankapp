@@ -2,10 +2,11 @@ import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
-import { syncPendingAttempts } from '@/features/timer/sync-attempts';
+import { deleteRemoteAttempt, syncPendingAttempts } from '@/features/timer/sync-attempts';
 import { localDateKey, roundToTenth } from '@/lib/date';
 import {
   clearActiveSession,
+  deleteAttempt,
   getActiveSession,
   getAttemptForDate,
   saveAttempt,
@@ -113,5 +114,18 @@ export function usePlankTimer(userId: string | undefined) {
     if (userId) syncPendingAttempts(userId).catch(() => {});
   }, [status, userId]);
 
-  return { status, elapsedSeconds, todayAttempt, start, stop };
+  // Removes today's logged attempt (local + Firestore) and returns to idle so a new
+  // plank can be recorded for the same day (FR-3.10). Remote delete is fire-and-forget
+  // to stay responsive offline, mirroring the sync-on-Stop pattern.
+  const deleteToday = useCallback(async () => {
+    if (status !== 'completed' || !todayAttempt) return;
+    await deleteAttempt(todayAttempt.id);
+    if (userId) deleteRemoteAttempt(userId, todayAttempt).catch(() => {});
+    startedAtMsRef.current = null;
+    setTodayAttempt(null);
+    setElapsedSeconds(0);
+    setStatus('idle');
+  }, [status, todayAttempt, userId]);
+
+  return { status, elapsedSeconds, todayAttempt, start, stop, deleteToday };
 }

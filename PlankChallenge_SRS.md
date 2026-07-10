@@ -50,6 +50,7 @@ There is no separate "super admin" role required for v1 beyond basic backend/sup
 - FR-3.7: If a user misses a day, that day is recorded as "no attempt" (0 or null) for streak/statistics purposes.
 - FR-3.8: Users can view a history log of their own past attempts (date + duration). As a table and chart (default).
 - FR-3.9: The app should prevent the phone to go to turn off the screen during the duration of the plank.
+- FR-3.10: After today's plank is logged, the Timer screen offers a Delete action that, on user confirmation, removes today's attempt both locally and from Firestore (so it disappears from the user's history/stats and all their groups). Deleting clears the "one per day" lock (FR-3.6), returning the Timer to the idle state so the user can record a new plank for the same day.
 
 ### 3.4 Statistics & Progress Tracking
 - FR-4.1: Each user has a personal stats view showing:
