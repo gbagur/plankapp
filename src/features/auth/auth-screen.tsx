@@ -6,7 +6,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedTextInput } from '@/components/themed-text-input';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
-import { resetPassword, signIn, signUp } from '@/features/auth/auth-actions';
+import { resetPassword, signIn, signInWithGoogle, signUp } from '@/features/auth/auth-actions';
 import { useAuth } from '@/features/auth/auth-context';
 import { friendlyAuthError } from '@/features/auth/auth-errors';
 
@@ -19,6 +19,7 @@ export function AuthScreen() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resetSent, setResetSent] = useState(false);
 
@@ -39,6 +40,18 @@ export function AuthScreen() {
       setError(friendlyAuthError(err));
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const signInGoogle = async () => {
+    setError(null);
+    setGoogleSubmitting(true);
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      setError(friendlyAuthError(err));
+    } finally {
+      setGoogleSubmitting(false);
     }
   };
 
@@ -94,7 +107,7 @@ export function AuthScreen() {
             </ThemedText>
           )}
 
-          <Pressable onPress={submit} disabled={submitting}>
+          <Pressable onPress={submit} disabled={submitting || googleSubmitting}>
             <ThemedView type="backgroundSelected" style={styles.submitButton}>
               {submitting ? (
                 <ActivityIndicator />
@@ -105,6 +118,28 @@ export function AuthScreen() {
               )}
             </ThemedView>
           </Pressable>
+
+          {mode !== 'forgot-password' && (
+            <>
+              <ThemedView style={styles.dividerRow}>
+                <ThemedView type="backgroundSelected" style={styles.dividerLine} />
+                <ThemedText themeColor="textSecondary" type="small">
+                  or
+                </ThemedText>
+                <ThemedView type="backgroundSelected" style={styles.dividerLine} />
+              </ThemedView>
+
+              <Pressable onPress={signInGoogle} disabled={submitting || googleSubmitting}>
+                <ThemedView type="backgroundSelected" style={styles.googleButton}>
+                  {googleSubmitting ? (
+                    <ActivityIndicator />
+                  ) : (
+                    <ThemedText type="link">Continue with Google</ThemedText>
+                  )}
+                </ThemedView>
+              </Pressable>
+            </>
+          )}
 
           {mode === 'sign-in' && (
             <>
@@ -157,6 +192,20 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   submitButton: {
+    paddingVertical: Spacing.three,
+    borderRadius: Spacing.four,
+    alignItems: 'center',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
+  dividerLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+  },
+  googleButton: {
     paddingVertical: Spacing.three,
     borderRadius: Spacing.four,
     alignItems: 'center',
